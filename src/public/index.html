@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@2.51.6/dist/full.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat&display=swap" rel="stylesheet">
+    <style>
+        .handwritten {
+            font-family: 'Caveat', cursive;
+        }
+        body {
+        background: #FFC0CB;
+    }
+    .logo-text {
+        font-family: 'Sedgwick Ave Display', cursive;
+        font-size: 3rem; /* Making the logotype bigger */
+    }
+    /* Added rounded corners to containers */
+    .container, .mockup-window, .stat {
+        border-radius: 8px;
+    }
+    </style>
+</head>
+</head>
+<body>
+<div class="container mx-auto">
+    <nav class="navbar bg-base-100">
+        <div class="flex-1">
+            <a class="btn btn-ghost normal-case text-xl logo-text">Bobešnátor</a>
+            <span class="text-xs">version 1.0.0</span>
+        </div>
+        <div class="flex-none">
+            <ul class="menu menu-horizontal p-0">
+                <li><a>Home</a></li>
+                <li><a>Examples</a></li>
+                <li><a>Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="flex justify-center my-10">
+        <div class="card w-96 bg-base-100 shadow-xl text-center">
+            <div class="card-body">
+                <h2 class="card-title">Ovládací panel</h2>
+                <form class="card-actions justify-center">
+                    <div class="form-control">
+                        <label class="cursor-pointer label">
+                            <span class="label-text">Option 1</span> 
+                            <input type="checkbox" class="checkbox checkbox-primary">
+                        </label>
+                    </div>
+                    <div class="form-control">
+                        <label class="cursor-pointer label">
+                            <span class="label-text">Option 2</span> 
+                            <input type="checkbox" class="checkbox checkbox-primary">
+                        </label>
+                    </div>
+                    <div class="form-control">
+                        <label class="cursor-pointer label">
+                            <span class="label-text">Option 3</span> 
+                            <input type="checkbox" class="checkbox checkbox-primary">
+                        </label>
+                    </div>
+                    <div class="form-control">
+                        <label class="cursor-pointer label">
+                            <span class="label-text">Option 4</span> 
+                            <input type="checkbox" class="checkbox checkbox-primary">
+                        </label>
+                    </div>
+                    <div class="form-control">
+                        <label class="cursor-pointer label">
+                            <span class="label-text">Option 5</span> 
+                            <input type="checkbox" class="checkbox checkbox-primary">
+                        </label>
+                    </div>
+                    <div class="form-control">
+                        <label class="cursor-pointer label">
+                            <span class="label-text">Option 6</span> 
+                            <input type="checkbox" class="checkbox checkbox-primary">
+                        </label>
+                    </div>
+                    <div class="form-control">
+                        <label class="cursor-pointer label">
+                            <span class="label-text">Option 7</span> 
+                            <input type="checkbox" class="checkbox checkbox-primary">
+                        </label>
+                    </div>
+                    <div class="form-control">
+                        <label class="cursor-pointer label">
+                            <span class="label-text">Option 8</span> 
+                            <input type="checkbox" class="checkbox checkbox-primary">
+                        </label>
+                    </div>
+                    <div class="form-control">
+                        <label class="cursor-pointer label">
+                            <span class="label-text">Option 9</span> 
+                            <input type="checkbox" class="checkbox checkbox-primary">
+                        </label>
+                    </div>
+                    <div class="form-control">
+                        <label class="cursor-pointer label">
+                            <span class="label-text">Option 10</span> 
+                            <input type="checkbox" class="checkbox checkbox-primary">
+                        </label>
+                    </div>
+                    <button class="btn btn-primary mt-4" id="findWebsitesButton">Najít webovky</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="dynamicMockupWindow" class="grid grid-cols-4 gap-4">
+        <!-- Dynamic content will be loaded here -->
+    </div>
+        <script>
+            document.getElementById('findWebsitesButotn').addEventListener('click', async () => {
+                const container = document.getElementById('dynamicMockupWindow');
+                container.innerHTML = ''; // Clear previous content
+                try {
+                    const response = await fetch('/api/mockup-data');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    if (data && data.mockups) { // Check if data and data.mockups are not undefined
+                        const mockups = data.mockups; // Get the array of mockups from the response
+                        for (const [index, mockup] of mockups.entries()) { // Use for...of loop for async operations inside
+                            const screenshotResponse = await fetch(`/api/screenshot`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ url: mockup.url }), // Send the URL of the current mockup to the server
+                            });
+                            if (!screenshotResponse.ok) {
+                                throw new Error(`HTTP error! status: ${screenshotResponse.status}`);
+                            }
+                            const screenshotData = await screenshotResponse.json();
+                            if (!screenshotData.success) {
+                                throw new Error('Failed to load screenshot');
+                            }
+                            const mockupWindow = document.createElement('div');
+                            mockupWindow.className = 'mockup-window border bg-base-300 rounded-lg'; // Removed w-full and ml-0
+                            const mockupElement = document.createElement('div');
+                            mockupElement.className = 'flex justify-start px-4 py-16 bg-base-200 rounded-lg';
+                            mockupElement.innerHTML = `
+                            <div class="stat">
+                                <img src="${screenshotData.screenshotLink}" alt="Screenshot for Mockup ${index + 1}" class="mockup-screenshot">
+                                <a href="${mockup.url}" target="_blank" class="btn btn-primary mt-4">Navštívit stránky</a>
+                            </div>
+                        `;
+                            mockupWindow.appendChild(mockupElement); // Append mockupElement to mockupWindow
+                            container.appendChild(mockupWindow); // Append mockupWindow to container
+                        }
+                    } else {
+                        throw new Error('No mockups found in the response');
+                    }
+                } catch (error) {
+                    console.error('Failed to load mockup data or screenshot:', error);
+                    container.innerHTML = '<p>Error loading data or screenshot.</p>';
+                }
+            });
+    </script>
+</div>
+</body>
+
+
+</html>
